@@ -65,7 +65,19 @@ Status LocalPartitionTopnContext::push_one_chunk_to_partitioner(RuntimeState* st
             [this, state](size_t partition_idx) {
                 _chunks_sorters.emplace_back(std::make_shared<ChunksSorterTopn>(
                         state, &_sort_exprs, &_is_asc_order, &_is_null_first, _sort_keys, _offset, _partition_limit,
+<<<<<<< HEAD
                         _topn_type, ChunksSorterTopn::tunning_buffered_chunks(_partition_limit)));
+=======
+                        _topn_type, ChunksSorterTopn::kDefaultMaxBufferRows, ChunksSorterTopn::kDefaultMaxBufferBytes,
+                        ChunksSorterTopn::tunning_buffered_chunks(_partition_limit)));
+                // create agg state for new partition
+                if (_enable_pre_agg) {
+                    AggDataPtr agg_states = _mem_pool->allocate_aligned(_pre_agg->_agg_states_total_size,
+                                                                        _pre_agg->_max_agg_state_align_size);
+                    _pre_agg->_managed_fn_states.emplace_back(std::make_unique<ManagedFunctionStates<PreAggState>>(
+                            &_pre_agg->_agg_fn_ctxs, agg_states, _pre_agg.get()));
+                }
+>>>>>>> 11b98b0e2c ([Enhancement] optimize the performace for topn with large offset (#55886))
             },
             [this, state](size_t partition_idx, const ChunkPtr& chunk) {
                 (void)_chunks_sorters[partition_idx]->update(state, chunk);

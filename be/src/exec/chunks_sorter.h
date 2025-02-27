@@ -49,6 +49,7 @@ struct DataSegment {
 
     void init(const std::vector<ExprContext*>* sort_exprs, const ChunkPtr& cnk);
 
+<<<<<<< HEAD
     // There is two compares in the method,
     // the first is:
     //     compare every row in every DataSegment of data_segments with `rows_to_sort - 1` row of this DataSegment,
@@ -60,6 +61,8 @@ struct DataSegment {
                                           std::vector<std::vector<uint8_t>>& filter_array,
                                           const SortDescs& sort_order_flags, uint32_t& least_num, uint32_t& middle_num);
 
+=======
+>>>>>>> 11b98b0e2c ([Enhancement] optimize the performace for topn with large offset (#55886))
     void clear() {
         chunk.reset(std::make_unique<Chunk>().release());
         order_by_columns.clear();
@@ -160,8 +163,6 @@ protected:
     const SortDescs _sort_desc;
     const std::string _sort_keys;
     const bool _is_topn;
-
-    size_t _next_output_row = 0;
 
     RuntimeProfile::Counter* _build_timer = nullptr;
     RuntimeProfile::Counter* _sort_timer = nullptr;
