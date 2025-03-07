@@ -47,6 +47,13 @@ public:
             return 64;
         }
         return 256;
+<<<<<<< HEAD
+=======
+    }
+
+    static constexpr size_t max_buffered_chunks(size_t rows_to_sort) {
+        return std::max<size_t>(tunning_buffered_chunks(rows_to_sort), rows_to_sort / 4069);
+>>>>>>> 54091b8764 ([BugFix] Fix topn with large limit  offset regression (#56590))
     }
 
     /**
@@ -74,7 +81,11 @@ public:
 
     size_t get_output_rows() const override;
 
+<<<<<<< HEAD
     int64_t mem_usage() const override { return _raw_chunks.mem_usage() + _merged_segment.mem_usage(); }
+=======
+    int64_t mem_usage() const override { return _raw_chunks.mem_usage + _merged_runs.mem_usage(); }
+>>>>>>> 54091b8764 ([BugFix] Fix topn with large limit  offset regression (#56590))
 
     void setup_runtime(RuntimeState* state, RuntimeProfile* profile, MemTracker* parent_mem_tracker) override;
 
@@ -123,21 +134,18 @@ private:
     struct RawChunks {
         std::vector<ChunkPtr> chunks;
         size_t size_of_rows = 0;
+        size_t mem_usage = 0;
 
-        int64_t mem_usage() const {
-            int64_t usage = 0;
-            for (auto& chunk : chunks) {
-                usage += chunk->memory_usage();
-            }
-            return usage;
-        }
+        void update_mem_usage(size_t delta) { mem_usage += delta; }
 
         void clear() {
             chunks.clear();
             size_of_rows = 0;
+            mem_usage = 0;
         }
     };
     const size_t _max_buffered_chunks;
+    size_t _init_buffered_chunks;
     RawChunks _raw_chunks;
     bool _init_merged_segment;
     DataSegment _merged_segment;
@@ -146,7 +154,29 @@ private:
     const size_t _offset;
     const TTopNType::type _topn_type;
 
+<<<<<<< HEAD
     std::vector<JoinRuntimeFilter*> _runtime_filter;
+=======
+    int _highest_nozero_pos(size_t val) {
+        if (val == 0) {
+            return 0;
+        }
+        return (sizeof(size_t) * 8) - __builtin_clzll(val) - 1;
+    }
+
+    void _adjust_chunks_capacity(bool inc) {
+        if (inc) {
+            size_t shift = (_highest_nozero_pos(_max_buffered_chunks) - _highest_nozero_pos(_init_buffered_chunks)) / 4;
+            shift = std::max<size_t>(shift, 1);
+            _buffered_chunks_capacity = _buffered_chunks_capacity << shift;
+            _buffered_chunks_capacity = std::min(_buffered_chunks_capacity, _max_buffered_chunks);
+        }
+    }
+
+    size_t _buffered_chunks_capacity;
+
+    std::vector<RuntimeFilter*> _runtime_filter;
+>>>>>>> 54091b8764 ([BugFix] Fix topn with large limit  offset regression (#56590))
 
     RuntimeProfile::Counter* _sort_filter_rows = nullptr;
     RuntimeProfile::Counter* _sort_filter_timer = nullptr;
